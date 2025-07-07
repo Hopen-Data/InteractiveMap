@@ -25,12 +25,12 @@ Este projeto já está configurado para usar o Leaflet na versão ^1.9.4, que é
 
 1. Instale as dependências necessárias no seu projeto React:
     ```bash
-    npm install react react-dom react-leaflet leaflet leaflet-draw leaflet.fullscreen leaflet-minimap react-leaflet-draw react-leaflet-cluster
+    npm install
     ```
    
 2. Instale as dependências de tipos para TypeScript:
     ```bash
-    npm install --save-dev @types/react @types/react-dom @types/leaflet @types/leaflet-draw @types/leaflet.fullscreen @types/leaflet-minimap
+    npm install --save-dev typescript @types/node
     ```
 3. Importe os estilos do Leaflet e dos pluginsno seu arquivo CSS principal:
     ```css

@@ -2,7 +2,7 @@ import React from 'react';
 import 'leaflet/dist/leaflet.css';
 import './map.css';
 
-function PopupGenerico({properties}) {
+function GenericPopup({properties}) {
     return (
         <div style={{maxWidth: 250}}>
             <strong>{properties.entity_name || 'Sem nome'}</strong>
@@ -43,4 +43,4 @@ function PopupGenerico({properties}) {
     );
 }
 
-export default PopupGenerico;
+export default GenericPopup;

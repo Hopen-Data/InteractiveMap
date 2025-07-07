@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Marker, Popup} from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
-import PopupGenerico from './PopupGenerico';
+import GenericPopup from './GenericPopup';
 
 export default function MarkerMap({features = []}) {
     const pontos = Array.isArray(features) ? features.filter(
@@ -81,7 +81,7 @@ export default function MarkerMap({features = []}) {
                         position={pos}
                     >
                         <Popup>
-                            <PopupGenerico properties={feature.properties}/>
+                            <GenericPopup properties={feature.properties}/>
                         </Popup>
                     </Marker>
                 );
