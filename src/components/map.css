@@ -1,0 +1,22 @@
+.app-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 400px;
+    min-width: 300px;
+    max-width: 600px;
+    overflow: auto;
+    background: #fff;
+    z-index: 1000;
+}
+
+.map-leaflet {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    height: 100vh;
+}
