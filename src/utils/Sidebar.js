@@ -1,16 +1,18 @@
 import React, {useEffect, useState} from 'react';
-import {API_BASE_URL} from './config';
-import {authFetch} from './utils/authFetch';
-import './app.css';
+import {API_BASE_URL} from '../config/settings';
+import {authFetch} from './authFetch';
+import '../app.css';
 
 export default function Sidebar({
     selectedLayers = [],
-    onChange = () => {
-    },
+    onChange = () => {},
     onAddMunicipioGeojson,
     onRemoveMunicipioGeojson,
-    municipiosSelecionados = []
-}) {
+    municipiosSelecionados = [],
+    heatmapEnabled,
+    setHeatmapEnabled
+    }) {
+    // Estados para armazenar dados das camadas e UFs
     const [layers, setLayers] = useState([]);
     const [ufs, setUfs] = useState([]);
     const [ufsExpandidas, setUfsExpandidas] = useState([]);
@@ -74,9 +76,26 @@ export default function Sidebar({
         }
     }
 
+    function handleToggleHeatmap() {
+        setHeatmapEnabled(prev => !prev);
+    }
+
     return (
         <aside
-            style={{width: 400, background: '#f5f5f5', padding: 16, overflowY: 'auto', maxHeight: '100vh'}}>
+            style
+                ={{width: 400, background: '#f5f5f5', padding: 16, overflowY: 'auto', maxHeight: '100vh'}}>
+            <hr/>
+            <h3>Visão Espacial</h3>
+            <label>
+                <input
+                    type="checkbox"
+                    checked={heatmapEnabled}
+                    onChange={handleToggleHeatmap}
+                />
+                Habilitar mapa de calor
+            </label>
+            <hr/>
+
             <h3>Camadas</h3>
             <ul style={{listStyle: 'none', padding: 0}}>
                 {layers.map((layer) => (

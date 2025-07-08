@@ -1,12 +1,11 @@
 import L from 'leaflet';
-
 import React, {useEffect, useState} from "react";
-import Sidebar from './Sidebar';
+import Sidebar from './utils/Sidebar';
 import InteractiveMap from './components/InteractiveMap';
 import {authFetch} from './utils/authFetch';
-import {API_BASE_URL} from './config';
+import {API_BASE_URL} from './config/settings';
 import Login from './components/Authentication';
-
+import {formatHeatmapPointsPorMunicipio} from './utils/heatmap';
 
 export default function App() {
     const [selectedLayers, setSelectedLayers] = useState([]);
@@ -14,17 +13,20 @@ export default function App() {
     const [layerFeatures, setLayerFeatures] = useState([]);
     const [municipioFeatures, setMunicipioFeatures] = useState([]);
     const [mapBounds, setMapBounds] = useState(null);
+
+    const [heatmapEnabled, setHeatmapEnabled] = useState(false);
+    const [heatmapPoints, setHeatmapPoints] = useState([]);
+    const formattedPointsPorMunicipio = formatHeatmapPointsPorMunicipio(heatmapPoints);
+
     const [loading, setLoading] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('access_token'));
 
-    // Atualiza autenticação ao mudar o token
     useEffect(() => {
         const onStorage = () => setIsAuthenticated(!!localStorage.getItem('access_token'));
         window.addEventListener('storage', onStorage);
         return () => window.removeEventListener('storage', onStorage);
     }, []);
 
-    // Busca features das camadas selecionadas
     useEffect(() => {
         if (!selectedLayers.length) {
             setLayerFeatures([]);
@@ -43,6 +45,26 @@ export default function App() {
         }).catch(() => setLoading(false));
     }, [selectedLayers]);
 
+    function fetchHeatmapForMunicipio(municipioId) {
+        authFetch(`${API_BASE_URL}/mapas/api/heatmap/municipios/${municipioId}/`)
+            .then(res => res.ok ? res.json() : null)
+            .then(data => {
+                if (!data) return;
+                // Se vier um array direto
+                if (Array.isArray(data)) {
+                    setHeatmapPoints(prev => [...prev, ...data]);
+                }
+                // Se vier um objeto único
+                else if (data.latitude && data.longitude) {
+                    setHeatmapPoints(prev => [...prev, data]);
+                }
+                // Se vier no formato { pontos: [...] }
+                else if (Array.isArray(data.pontos)) {
+                    setHeatmapPoints(prev => [...prev, ...data.pontos]);
+                }
+            });
+    }
+
     function onAddMunicipioGeojson(municipioId) {
         setMunicipiosSelecionados(prev =>
             prev.includes(municipioId) ? prev : [...prev, municipioId]
@@ -51,7 +73,14 @@ export default function App() {
             .then(res => res.ok ? res.json() : null)
             .then(data => {
                 if (data && data.features && data.features[0]) {
-                    setMunicipioFeatures(prev => [...prev, ...data.features]);
+                    setMunicipioFeatures(prev => {
+                        const newFeature = data.features[0];
+                        // Evita adicionar features duplicados pelo id
+                        if (prev.some(f => f.properties.id === newFeature.properties.id)) {
+                            return prev;
+                        }
+                        return [...prev, newFeature];
+                    });
                     const geojson = data.features[0];
                     const layer = L.geoJSON(geojson);
                     const leafletBounds = layer.getBounds();
@@ -61,12 +90,15 @@ export default function App() {
                             [leafletBounds.getNorthEast().lat, leafletBounds.getNorthEast().lng]
                         ]);
                     }
+                    fetchHeatmapForMunicipio(municipioId);
                 }
             });
     }
 
     function onRemoveMunicipioGeojson(municipioId) {
         setMunicipiosSelecionados(prev => prev.filter(id => id !== municipioId));
+        // Remove pontos do heatmap do município removido
+        setHeatmapPoints(prev => prev.filter(p => p.codigo_ibge !== municipioId));
     }
 
     const features = [...layerFeatures, ...municipioFeatures];
@@ -101,9 +133,17 @@ export default function App() {
                     municipiosSelecionados={municipiosSelecionados}
                     onAddMunicipioGeojson={onAddMunicipioGeojson}
                     onRemoveMunicipioGeojson={onRemoveMunicipioGeojson}
+                    heatmapEnabled={heatmapEnabled}
+                    setHeatmapEnabled={setHeatmapEnabled}
                 />
             </aside>
-            <InteractiveMap features={features} bounds={mapBounds}/>
+            <InteractiveMap
+                features={features}
+                bounds={mapBounds}
+                heatmapPointsPorMunicipio={formattedPointsPorMunicipio}
+                heatmapEnabled={heatmapEnabled}
+                municipiosSelecionados={municipiosSelecionados}
+            />
         </div>
     );
 }

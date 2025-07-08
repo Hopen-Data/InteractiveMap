@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import {useState} from 'react';
+import {API_BASE_URL} from '../config/settings';
 
-export default function Login({ onLogin }) {
-    // Defina aqui o usuário e senha padrão, se quiser preencher automaticamente
+export default function Login({onLogin}) {
     const [username, setUsername] = useState('havokz');
     const [password, setPassword] = useState('123');
     const [error, setError] = useState('');
@@ -9,12 +9,22 @@ export default function Login({ onLogin }) {
     async function handleSubmit(e) {
         e.preventDefault();
         setError('');
-        const res = await fetch('http://localhost:8000/api/token/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password }),
-        });
-        const data = await res.json();
+        let data = {};
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/token/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({username, password}),
+            });
+            if (!res.ok) {
+                setError('Erro ao conectar ao servidor');
+                return;
+            }
+            data = await res.json();
+        } catch (err) {
+            setError('Erro inesperado no servidor');
+            return;
+        }
         if (data.access) {
             localStorage.setItem('access_token', data.access);
             onLogin();

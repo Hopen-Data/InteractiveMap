@@ -50,14 +50,6 @@ export default function MarkerMap({features = []}) {
         }
     };
 
-    const toggleDraggable = idx => {
-        setDraggables(ds => {
-            const newDs = [...ds];
-            newDs[idx] = !newDs[idx];
-            return newDs;
-        });
-    };
-
     return (
         <MarkerClusterGroup
             maxClusterRadius={40}

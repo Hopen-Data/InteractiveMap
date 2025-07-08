@@ -8,17 +8,22 @@ const ShowCoordsOnClick = () => {
 
     useEffect(() => {
         const onClick = (e) => {
-            const {lat, lng} = e.latlng;
-            popupRef.current
-                .setLatLng(e.latlng)
-                .setContent(
-                    `<div style="font-size:13px">
-                        <b>Coordenadas</b><br/>
-                        Lat: ${lat.toFixed(6)}<br/>
-                        Lng: ${lng.toFixed(6)}
-                    </div>`
-                )
-                .openOn(map);
+            // Só mostra as coordenadas se não clicar em um layer de feature
+            if (
+                !e.originalEvent.target.classList.contains('leaflet-interactive')
+            ) {
+                const {lat, lng} = e.latlng;
+                popupRef.current
+                    .setLatLng(e.latlng)
+                    .setContent(
+                        `<div style="font-size:13px">
+                            <b>Coordenadas</b><br/>
+                            Lat: ${lat.toFixed(6)}<br/>
+                            Lng: ${lng.toFixed(6)}
+                        </div>`
+                    )
+                    .openOn(map);
+            }
         };
         map.on('click', onClick);
         return () => {
