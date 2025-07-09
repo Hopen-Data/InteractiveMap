@@ -4,8 +4,9 @@ import Sidebar from './utils/Sidebar';
 import InteractiveMap from './components/InteractiveMap';
 import {authFetch} from './utils/authFetch';
 import {API_BASE_URL} from './config/settings';
-import Login from './components/Authentication';
+import SearchGeoJSONLayer from "./components/SearchGeoJSONLayer";
 import {formatHeatmapPointsPorMunicipio} from './utils/heatmap';
+import {getTokenFromUrl} from './utils/getTokenFromUrl';
 
 export default function App() {
     const [selectedLayers, setSelectedLayers] = useState([]);
@@ -14,17 +15,23 @@ export default function App() {
     const [municipioFeatures, setMunicipioFeatures] = useState([]);
     const [mapBounds, setMapBounds] = useState(null);
 
+    const [searchResults, setSearchResults] = useState([]);
+
     const [heatmapEnabled, setHeatmapEnabled] = useState(false);
     const [heatmapPoints, setHeatmapPoints] = useState([]);
     const formattedPointsPorMunicipio = formatHeatmapPointsPorMunicipio(heatmapPoints);
 
-    const [loading, setLoading] = useState(false);
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('access_token'));
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        const onStorage = () => setIsAuthenticated(!!localStorage.getItem('access_token'));
-        window.addEventListener('storage', onStorage);
-        return () => window.removeEventListener('storage', onStorage);
+        const token = getTokenFromUrl();
+        console.log(token);
+        if (token) {
+            localStorage.setItem('access_token', token);
+            setIsAuthenticated(true);
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
     }, []);
 
     useEffect(() => {
@@ -103,9 +110,6 @@ export default function App() {
 
     const features = [...layerFeatures, ...municipioFeatures];
 
-    if (!isAuthenticated) {
-        return <Login onLogin={() => setIsAuthenticated(true)}/>;
-    }
 
     return (
         <div style={{display: 'flex'}}>
@@ -136,6 +140,13 @@ export default function App() {
                     heatmapEnabled={heatmapEnabled}
                     setHeatmapEnabled={setHeatmapEnabled}
                 />
+
+                {selectedLayers.length > 0 && (
+                    <SearchGeoJSONLayer
+                        layerId={selectedLayers[0]}
+                        onData={setSearchResults}
+                    />
+                )}
             </aside>
             <InteractiveMap
                 features={features}

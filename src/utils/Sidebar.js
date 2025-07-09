@@ -82,9 +82,7 @@ export default function Sidebar({
 
     return (
         <aside
-            style
-                ={{width: 400, background: '#f5f5f5', padding: 16, overflowY: 'auto', maxHeight: '100vh'}}>
-            <hr/>
+            style={{width: 400, background: '#f5f5f5', padding: 16, overflowY: 'auto', maxHeight: '100vh'}}>
             <h3>Visão Espacial</h3>
             <label>
                 <input
