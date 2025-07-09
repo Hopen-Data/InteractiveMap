@@ -4,7 +4,6 @@ import Sidebar from './utils/Sidebar';
 import InteractiveMap from './components/InteractiveMap';
 import {authFetch} from './utils/authFetch';
 import {API_BASE_URL} from './config/settings';
-import SearchGeoJSONLayer from "./components/SearchGeoJSONLayer";
 import {formatHeatmapPointsPorMunicipio} from './utils/heatmap';
 import {getTokenFromUrl} from './utils/getTokenFromUrl';
 
@@ -21,15 +20,12 @@ export default function App() {
     const [heatmapPoints, setHeatmapPoints] = useState([]);
     const formattedPointsPorMunicipio = formatHeatmapPointsPorMunicipio(heatmapPoints);
 
-    const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem('access_token'));
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const token = getTokenFromUrl();
-        console.log(token);
         if (token) {
             localStorage.setItem('access_token', token);
-            setIsAuthenticated(true);
             window.history.replaceState({}, document.title, window.location.pathname);
         }
     }, []);
@@ -110,7 +106,6 @@ export default function App() {
 
     const features = [...layerFeatures, ...municipioFeatures];
 
-
     return (
         <div style={{display: 'flex'}}>
             {loading && (
@@ -140,13 +135,6 @@ export default function App() {
                     heatmapEnabled={heatmapEnabled}
                     setHeatmapEnabled={setHeatmapEnabled}
                 />
-
-                {selectedLayers.length > 0 && (
-                    <SearchGeoJSONLayer
-                        layerId={selectedLayers[0]}
-                        onData={setSearchResults}
-                    />
-                )}
             </aside>
             <InteractiveMap
                 features={features}

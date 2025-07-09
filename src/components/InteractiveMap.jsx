@@ -6,6 +6,7 @@ import MiniMapControl from './MiniMap';
 import FileLayerControl from './FileLayerControl';
 import ShowCoordsOnClick from './ShowCoordsOnClick';
 import ResetViewButton from './ResetViewButton';
+import SearchGeoJSONControl from './SearchGeoJSONControl';
 import {HeatmapLayer} from "react-leaflet-heatmap-layer-v3";
 
 import 'leaflet.fullscreen';
@@ -14,16 +15,21 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 import './map.css';
 
 export default function InteractiveMap({
-                                           features,
-                                           bounds,
-                                           heatmapPointsPorMunicipio,
-                                           heatmapEnabled,
-                                           municipiosSelecionados = []
-                                       }) {
+       features,
+       bounds,
+       heatmapPointsPorMunicipio,
+       heatmapEnabled,
+       municipiosSelecionados = [],
+        layerId
+   }) {
+
     const position = [-14.235004, -51.92528];
     const featuresNaoPonto = (features || [])
-        .filter(f => f?.geometry && f.geometry.type !== 'Point')
-        .filter(f => municipiosSelecionados.includes(f.properties.id));
+        .filter(f => {
+            const geometry = typeof f.geometry === 'string' ? JSON.parse(f.geometry) : f.geometry;
+            return geometry && geometry.type !== 'Point';
+        })
+        .filter(f => f.properties && municipiosSelecionados.includes(f.properties.id));
 
     const allPoints = heatmapPointsPorMunicipio.flatMap(mun => mun.points);
     const maxIntensity = Math.max(...allPoints.map(p => p.intensity || 0)) || 1;
@@ -99,7 +105,7 @@ export default function InteractiveMap({
                         }}
                     />
                 ))}
-
+                <SearchGeoJSONControl/>
                 <MarkerMap features={features}/>
                 <FileLayerControl/>
                 <ResetViewButton initialCenter={position} initialZoom={5}/>
