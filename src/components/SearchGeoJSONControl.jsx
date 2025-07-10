@@ -1,4 +1,6 @@
 import {useState} from "react";
+import {authFetch} from '../utils/authFetch';
+import {API_BASE_URL} from '../config/settings';
 
 function SearchGeoJSONControl({layerId, onData}) {
     const [search, setSearch] = useState("");
@@ -6,14 +8,29 @@ function SearchGeoJSONControl({layerId, onData}) {
     const [error, setError] = useState(null);
 
     const handleSearch = async () => {
-        if (!search.trim()) return;
+        if (!search.trim() || !layerId || typeof layerId !== "string" || !layerId.length) {
+            setError("Selecione uma camada para pesquisar.");
+            return;
+        }
+
         setLoading(true);
         setError(null);
         try {
-            const resp = await fetch(`/mapas/api/search-geojson-layer/${layerId}/?q=${encodeURIComponent(search)}`);
+            const resp = await authFetch(
+                `${API_BASE_URL}/mapas/api/search-geojson-layer/${layerId}/?q=${encodeURIComponent(search)}`
+            );
+            if (!resp.ok) {
+                throw new Error(`Erro HTTP: ${resp.status}`);
+            }
             const data = await resp.json();
-            onData(data);
+            if (!data || (Array.isArray(data.features) && data.features.length === 0)) {
+                setError("Nenhum ponto encontrado para a busca.");
+                onData([]);
+            } else {
+                onData(data);
+            }
         } catch (e) {
+            console.error(e);
             setError("Erro ao buscar dados.");
         }
         setLoading(false);
@@ -43,13 +60,20 @@ function SearchGeoJSONControl({layerId, onData}) {
                 aria-label="Buscar camada"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleSearch()}
-                disabled={loading}
+                onKeyDown={e => {
+                    if (e.key === "Enter" && layerId) {
+                        handleSearch();
+                    }
+                }}
+                disabled={loading || !layerId}
             />
-            <button onClick={handleSearch} disabled={loading || !search.trim()}>
+            <button
+                onClick={handleSearch}
+                disabled={loading || !search.trim() || !layerId}
+            >
                 {loading ? "Buscando..." : "Buscar"}
             </button>
-            {search && !loading && (
+            {search && !loading && layerId && (
                 <button onClick={handleClear} aria-label="Limpar busca">Limpar</button>
             )}
             {error && <div style={{color: "red"}}>{error}</div>}

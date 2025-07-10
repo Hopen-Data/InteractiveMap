@@ -14,8 +14,6 @@ export default function App() {
     const [municipioFeatures, setMunicipioFeatures] = useState([]);
     const [mapBounds, setMapBounds] = useState(null);
 
-    const [searchResults, setSearchResults] = useState([]);
-
     const [heatmapEnabled, setHeatmapEnabled] = useState(false);
     const [heatmapPoints, setHeatmapPoints] = useState([]);
     const formattedPointsPorMunicipio = formatHeatmapPointsPorMunicipio(heatmapPoints);
@@ -142,6 +140,7 @@ export default function App() {
                 heatmapPointsPorMunicipio={formattedPointsPorMunicipio}
                 heatmapEnabled={heatmapEnabled}
                 municipiosSelecionados={municipiosSelecionados}
+                layerId={selectedLayers}
             />
         </div>
     );
