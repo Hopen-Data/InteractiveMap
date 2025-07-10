@@ -27,7 +27,6 @@ export default function Sidebar({
                 setUfs(Array.isArray(ufsData) ? ufsData : ufsData.results || []);
             })
             .catch(error => {
-                console.error(error);
                 setLayers([]);
                 setUfs([]);
             });

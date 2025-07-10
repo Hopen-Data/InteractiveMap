@@ -7,8 +7,13 @@ function SearchGeoJSONControl({layerId, onData}) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
+    const realLayerId = Array.isArray(layerId) ? layerId[0] : layerId;
+    const isLayerIdValid = () =>
+        (typeof realLayerId === "string" && realLayerId.trim() !== "") ||
+        (typeof realLayerId === "number" && !Number.isNaN(realLayerId) && realLayerId > 0);
+
     const handleSearch = async () => {
-        if (!search.trim() || !layerId || typeof layerId !== "string" || !layerId.length) {
+        if (!search.trim() || !isLayerIdValid()) {
             setError("Selecione uma camada para pesquisar.");
             return;
         }
@@ -16,9 +21,8 @@ function SearchGeoJSONControl({layerId, onData}) {
         setLoading(true);
         setError(null);
         try {
-            const resp = await authFetch(
-                `${API_BASE_URL}/mapas/api/search-geojson-layer/${layerId}/?q=${encodeURIComponent(search)}`
-            );
+            const url = `${API_BASE_URL}/mapas/api/search-geojson-layer/${encodeURIComponent(realLayerId)}/?q=${encodeURIComponent(search)}`;
+            const resp = await authFetch(url);
             if (!resp.ok) {
                 throw new Error(`Erro HTTP: ${resp.status}`);
             }
@@ -30,8 +34,11 @@ function SearchGeoJSONControl({layerId, onData}) {
                 onData(data);
             }
         } catch (e) {
-            console.error(e);
-            setError("Erro ao buscar dados.");
+            if (e.message && e.message.includes("404")) {
+                setError("Nenhum ponto encontrado para a busca.");
+            } else {
+                setError("Erro ao buscar dados.");
+            }
         }
         setLoading(false);
     };
@@ -61,19 +68,19 @@ function SearchGeoJSONControl({layerId, onData}) {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 onKeyDown={e => {
-                    if (e.key === "Enter" && layerId) {
+                    if (e.key === "Enter" && isLayerIdValid()) {
                         handleSearch();
                     }
                 }}
-                disabled={loading || !layerId}
+                disabled={loading || !isLayerIdValid()}
             />
             <button
                 onClick={handleSearch}
-                disabled={loading || !search.trim() || !layerId}
+                disabled={loading || !search.trim() || !isLayerIdValid()}
             >
                 {loading ? "Buscando..." : "Buscar"}
             </button>
-            {search && !loading && layerId && (
+            {search && !loading && isLayerIdValid() && (
                 <button onClick={handleClear} aria-label="Limpar busca">Limpar</button>
             )}
             {error && <div style={{color: "red"}}>{error}</div>}
