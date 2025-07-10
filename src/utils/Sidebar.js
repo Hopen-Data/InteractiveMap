@@ -10,8 +10,10 @@ export default function Sidebar({
     onRemoveMunicipioGeojson,
     municipiosSelecionados = [],
     heatmapEnabled,
-    setHeatmapEnabled
-    }) {
+    setHeatmapEnabled,
+    choroplethAtivo, 
+    setChoroplethAtivo,
+}) {
     // Estados para armazenar dados das camadas e UFs
     const [layers, setLayers] = useState([]);
     const [ufs, setUfs] = useState([]);
@@ -80,22 +82,42 @@ export default function Sidebar({
         setHeatmapEnabled(prev => !prev);
     }
 
+    function handleTogglechoropleth() {
+        setChoroplethAtivo(prev => !prev);
+    }
+
     return (
         <aside
             style={{width: 400, background: '#f5f5f5', padding: 16, overflowY: 'auto', maxHeight: '100vh'}}>
             <h3>Visão Espacial</h3>
-            <label>
-                <input
-                    type="checkbox"
-                    checked={heatmapEnabled}
-                    onChange={handleToggleHeatmap}
-                />
-                Habilitar mapa de calor
-            </label>
-            <hr/>
+            <ul style={{ listStyle: 'none' }}>
+                <li>
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={heatmapEnabled}
+                            onChange={handleToggleHeatmap}
+                        />
+                        Habilitar mapa de calor
+                    </label>
+                </li>
+                <li>
+                    <label>
+                        <input
+                            className="form-check-input"
+                            type="checkbox"
+                            id="choropleth-toggle"
+                            checked={choroplethAtivo}
+                            onChange={handleTogglechoropleth}
+                        />
+                        Mapa coropletico
+                    </label>
+                </li>
+            </ul>
+            <hr />
 
             <h3>Camadas</h3>
-            <ul style={{listStyle: 'none', padding: 0}}>
+            <ul style={{ listStyle: 'none', padding: 0 }}>
                 {layers.map((layer) => (
                     <li key={layer.id}>
                         <label>

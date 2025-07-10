@@ -9,11 +9,19 @@ import ResetViewButton from './ResetViewButton';
 import SearchGeoJSONControl from './SearchGeoJSONControl';
 import {EditControl} from 'react-leaflet-draw';
 import {HeatmapLayer} from "react-leaflet-heatmap-layer-v3";
+import ChoroplethLegend from './ChoroplethLegend';
+import { getChoroplethStyle } from '../utils/mapUtils';
 
 import 'leaflet.fullscreen';
 import 'leaflet.fullscreen/Control.FullScreen.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import './map.css';
+
+// Ele usa o hook 'useMap' para acessar a instância do mapa e passá-la para a legenda.
+function LegendControl({ choroplethAtivo }) {
+    const map = useMap();
+    return choroplethAtivo ? <ChoroplethLegend map={map} /> : null;
+}
 
 export default function InteractiveMap(
     {
@@ -22,6 +30,7 @@ export default function InteractiveMap(
         heatmapPointsPorMunicipio,
         heatmapEnabled,
         municipiosSelecionados = [],
+        choroplethAtivo,
         layerId
     }
 ) {
@@ -64,9 +73,20 @@ export default function InteractiveMap(
         }
     }, [leafletMap, pendingFlyTo]);
 
+    const mapContainerId = 'map-leaflet-container';
+
+    useEffect(() => {
+        const container = document.getElementById(mapContainerId);
+        if (container && container._leaflet_id) {
+            container._leaflet_id = null;
+        }
+    }, [bounds, features]);
+
 
     return (<div className="app-container">
         <MapContainer
+            id="map-leaflet-container"
+            key={`${features.length}-${JSON.stringify(bounds)}`}
             center={position}
             zoom={5}
             minZoom={3}
@@ -100,29 +120,32 @@ export default function InteractiveMap(
                 attribution="&copy; OpenStreetMap contributors"
             />
 
-            // Aplica o Popup apenas para os municípios selecionados
+            {/* // Aplica o Popup apenas para os municípios selecionados */}
             {featuresNaoPonto.length > 0 && featuresNaoPonto.map((feature, idx) => (<GeoJSON
                 key={feature.properties.id}
                 data={feature}
-                style={{
-                    color: '#1976d2', weight: 1, opacity: 0.8, fillColor: '#90caf9', fillOpacity: 0.2
-                }}
+                style={(feature) => getChoroplethStyle(feature, choroplethAtivo)}
                 onEachFeature={(feature, layer) => {
                     if (feature.properties) {
                         const nome = feature.properties.name || '';
                         const pib = feature.properties.pib?.valor ? `R\$ ${feature.properties.pib.valor.toLocaleString('pt-BR')}` : 'N/A';
+                        const pop = feature.properties.population?.valor ? `${feature.properties.population.valor.toLocaleString('pt-BR')}`: 'N/A';
+                        const anoPop = feature.properties.population?.ano || '';
                         const anoPib = feature.properties.pib?.ano || '';
-                        layer.bindPopup(`<div>
-                                        <strong>Município:</strong> ${nome}<br/>
-                                        <strong>PIB:</strong> ${pib} ${anoPib ? `(${anoPib})` : ''}
-                                    </div>`);
+                        layer.bindPopup(
+                            `<div>
+                                <strong>Município:</strong> ${nome}<br/>
+                                <strong>População:</strong> ${pop} ${anoPop ? `(${anoPop})` : ''} <br>
+                                <strong>PIB:</strong> ${pib} ${anoPib ? `(${anoPib})` : ''}
+                            </div>`
+                        );
                     }
                 }}
             />))}
-            <SearchGeoJSONControl layerId={layerId} onData={handleData}/>
+            <SearchGeoJSONControl layerId={layerId} onData={handleData} />
             <MarkerMap features={features}/>
             <FileLayerControl/>
-            <ResetViewButton initialCenter={position} initialZoom={5}/>
+            <ResetViewButton initialCenter={position} initialZoom={5} />
             <ShowCoordsOnClick/>
             <FeatureGroup>
                 <EditControl
@@ -139,9 +162,10 @@ export default function InteractiveMap(
                     }}
                 />
             </FeatureGroup>
-            <MiniMapControl position="bottomright" zoom={0}/>
+            <MiniMapControl position="bottomright" zoom={0} />
             {bounds && Array.isArray(bounds) && bounds.length === 2 && !pendingFlyTo && (
-                <ZoomToBounds bounds={bounds}/>)}
+                <ZoomToBounds bounds={bounds} />)}
+            <LegendControl choroplethAtivo={choroplethAtivo} />
         </MapContainer>
     </div>);
 }
