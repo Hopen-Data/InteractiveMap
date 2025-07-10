@@ -4,16 +4,17 @@ import {authFetch} from './authFetch';
 import '../app.css';
 
 export default function Sidebar({
-    selectedLayers = [],
-    onChange = () => {},
-    onAddMunicipioGeojson,
-    onRemoveMunicipioGeojson,
-    municipiosSelecionados = [],
-    heatmapEnabled,
-    setHeatmapEnabled,
-    choroplethAtivo, 
-    setChoroplethAtivo,
-}) {
+                                    selectedLayers = [],
+                                    onChange = () => {
+                                    },
+                                    onAddMunicipioGeojson,
+                                    onRemoveMunicipioGeojson,
+                                    municipiosSelecionados = [],
+                                    heatmapEnabled,
+                                    setHeatmapEnabled,
+                                    choroplethAtivo,
+                                    setChoroplethAtivo,
+                                }) {
     // Estados para armazenar dados das camadas e UFs
     const [layers, setLayers] = useState([]);
     const [ufs, setUfs] = useState([]);
@@ -89,7 +90,7 @@ export default function Sidebar({
         <aside
             style={{width: 400, background: '#f5f5f5', padding: 16, overflowY: 'auto', maxHeight: '100vh'}}>
             <h3>Visão Espacial</h3>
-            <ul style={{ listStyle: 'none' }}>
+            <ul style={{listStyle: 'none', padding: 0}}>
                 <li>
                     <label>
                         <input
@@ -113,10 +114,10 @@ export default function Sidebar({
                     </label>
                 </li>
             </ul>
-            <hr />
+            <hr/>
 
             <h3>Camadas</h3>
-            <ul style={{ listStyle: 'none', padding: 0 }}>
+            <ul style={{listStyle: 'none', padding: 0}}>
                 {layers.map((layer) => (
                     <li key={layer.id}>
                         <label>

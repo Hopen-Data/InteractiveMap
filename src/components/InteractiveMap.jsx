@@ -73,20 +73,8 @@ export default function InteractiveMap(
         }
     }, [leafletMap, pendingFlyTo]);
 
-    const mapContainerId = 'map-leaflet-container';
-
-    useEffect(() => {
-        const container = document.getElementById(mapContainerId);
-        if (container && container._leaflet_id) {
-            container._leaflet_id = null;
-        }
-    }, [bounds, features]);
-
-
     return (<div className="app-container">
         <MapContainer
-            id="map-leaflet-container"
-            key={`${features.length}-${JSON.stringify(bounds)}`}
             center={position}
             zoom={5}
             minZoom={3}
