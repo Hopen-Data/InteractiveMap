@@ -13,6 +13,7 @@ export default function App() {
     const [layerFeatures, setLayerFeatures] = useState([]);
     const [municipioFeatures, setMunicipioFeatures] = useState([]);
     const [mapBounds, setMapBounds] = useState(null);
+    const [choroplethAtivo, setChoroplethAtivo] = useState(false);
 
     const [heatmapEnabled, setHeatmapEnabled] = useState(false);
     const [heatmapPoints, setHeatmapPoints] = useState([]);
@@ -132,6 +133,8 @@ export default function App() {
                     onRemoveMunicipioGeojson={onRemoveMunicipioGeojson}
                     heatmapEnabled={heatmapEnabled}
                     setHeatmapEnabled={setHeatmapEnabled}
+                    choroplethAtivo={choroplethAtivo}
+                    setChoroplethAtivo={setChoroplethAtivo}
                 />
             </aside>
             <InteractiveMap
@@ -139,6 +142,7 @@ export default function App() {
                 bounds={mapBounds}
                 heatmapPointsPorMunicipio={formattedPointsPorMunicipio}
                 heatmapEnabled={heatmapEnabled}
+                choroplethAtivo={choroplethAtivo}
                 municipiosSelecionados={municipiosSelecionados}
                 layerId={selectedLayers}
             />
