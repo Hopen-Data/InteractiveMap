@@ -1,4 +1,5 @@
 import L from 'leaflet';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import React, {useEffect, useState} from "react";
 import Sidebar from './utils/Sidebar';
 import InteractiveMap from './components/InteractiveMap';

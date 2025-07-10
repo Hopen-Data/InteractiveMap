@@ -3,6 +3,15 @@ import {API_BASE_URL} from '../config/settings';
 import {authFetch} from './authFetch';
 import '../app.css';
 
+// Importando componentes do react-bootstrap
+import Accordion from 'react-bootstrap/Accordion';
+import Button from 'react-bootstrap/Button';
+import Form from 'react-bootstrap/Form';
+import ListGroup from 'react-bootstrap/ListGroup';
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
+
 export default function Sidebar({
                                     selectedLayers = [],
                                     onChange = () => {
@@ -19,6 +28,7 @@ export default function Sidebar({
     const [layers, setLayers] = useState([]);
     const [ufs, setUfs] = useState([]);
     const [ufsExpandidas, setUfsExpandidas] = useState([]);
+    const [activeUfKey, setActiveUfKey] = useState(null);
 
     useEffect(() => {
         Promise.all([
@@ -87,42 +97,36 @@ export default function Sidebar({
     }
 
     return (
-        <aside
-            style={{width: 400, background: '#f5f5f5', padding: 16, overflowY: 'auto', maxHeight: '100vh'}}>
-            <h3>Visão Espacial</h3>
-            <ul style={{listStyle: 'none', padding: 0}}>
-                <li>
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked={heatmapEnabled}
-                            onChange={handleToggleHeatmap}
-                        />
-                        Habilitar mapa de calor
-                    </label>
-                </li>
-                <li>
-                    <label>
-                        <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="choropleth-toggle"
-                            checked={choroplethAtivo}
-                            onChange={handleTogglechoropleth}
-                        />
-                        Mapa coropletico
-                    </label>
-                </li>
-            </ul>
-            <hr/>
+        <aside className="bg-light p-5" style={{ width: 380, height: '100vh', overflowY: 'auto' }}>
+            <Container fluid>
+                <h4 className="mb-3">Visão Espacial</h4>
+                <Form.Group>
+                    <Form.Check
+                        type="switch"
+                        id="heatmap-switch"
+                        label="Habilitar mapa de calor"
+                        checked={heatmapEnabled}
+                        onChange={() => setHeatmapEnabled(prev => !prev)}
+                    />
+                    <Form.Check
+                        type="switch"
+                        id="choropleth-switch"
+                        label="Habilitar mapa coroplético"
+                        checked={choroplethAtivo}
+                        onChange={() => setChoroplethAtivo(prev => !prev)}
+                    />
+                </Form.Group>
+                
+                <hr />
 
-            <h3>Camadas</h3>
-            <ul style={{listStyle: 'none', padding: 0}}>
-                {layers.map((layer) => (
-                    <li key={layer.id}>
-                        <label>
-                            <input
+                <h4 className="mb-3">Camadas de Pontos</h4>
+                <ListGroup>
+                    {layers.map((layer) => (
+                        <ListGroup.Item key={layer.id} className="border-0 bg-light">
+                            <Form.Check
                                 type="checkbox"
+                                id={`layer-${layer.id}`}
+                                label={layer.name}
                                 checked={selectedLayers.includes(layer.id)}
                                 onChange={() => {
                                     const newSelected = selectedLayers.includes(layer.id)
@@ -131,60 +135,51 @@ export default function Sidebar({
                                     onChange(newSelected);
                                 }}
                             />
-                            {layer.name}
-                        </label>
-                    </li>
-                ))}
-            </ul>
-            <hr/>
-            <h3>Estados</h3>
-            <ul style={{listStyle: 'none', padding: 0}}>
-                {ufs.map(uf => (
-                    <li key={uf.sigla}>
-                        <label>
-                            <input
-                                type="checkbox"
-                                checked={ufsExpandidas.includes(uf.sigla)}
-                                onChange={() => handleUfToggle(uf.sigla)}
-                            />
-                            {uf.nome}
-                            <button
-                                type="button"
-                                style={{marginLeft: 8, fontSize: 12}}
-                                onClick={() => handleSelectAllMunicipios(uf)}
-                            >
-                                Selecionar todos
-                            </button>
-                        </label>
-                        {ufsExpandidas.includes(uf.sigla) && (
-                            <>
-                                <h4 style={{margin: '8px 0 4px 24px', fontSize: 14}}>
-                                    Municípios de {uf.nome}
-                                </h4>
-                                <ul style={{
-                                    listStyle: 'none',
-                                    padding: '0 0 0 24px',
-                                    maxHeight: 200,
-                                    overflowY: 'auto'
-                                }}>
+                        </ListGroup.Item>
+                    ))}
+                </ListGroup>
+
+                <hr />
+
+                <h4 className="mb-3">Malhas Municipais</h4>
+                <Accordion activeKey={activeUfKey} onSelect={(key) => setActiveUfKey(key)}>
+                    {ufs.map((uf, index) => (
+                        <Accordion.Item eventKey={String(index)} key={uf.sigla}>
+                            <Accordion.Header>
+                                <Container fluid className="p-0">
+                                    <Row className="align-items-center">
+                                        <Col>{uf.nome}</Col>
+                                        <Col xs="auto">
+                                            <Button
+                                                variant="outline-secondary"
+                                                size="sm"
+                                                onClick={(e) => handleSelectAllMunicipios(e, uf)}
+                                            >
+                                                Todos
+                                            </Button>
+                                        </Col>
+                                    </Row>
+                                </Container>
+                            </Accordion.Header>
+                            <Accordion.Body style={{ maxHeight: 250, overflowY: 'auto' }}>
+                                <ListGroup variant="flush">
                                     {uf.municipios.map(m => (
-                                        <li key={m.id}>
-                                            <label>
-                                                <input
-                                                    type="checkbox"
-                                                    checked={municipiosSelecionados.includes(m.id)}
-                                                    onChange={() => handleMunicipioToggle(m.id)}
-                                                />
-                                                {m.nome}
-                                            </label>
-                                        </li>
+                                        <ListGroup.Item key={m.id} className="border-0">
+                                            <Form.Check
+                                                type="checkbox"
+                                                id={`municipio-${m.id}`}
+                                                label={m.nome}
+                                                checked={municipiosSelecionados.includes(m.id)}
+                                                onChange={() => handleMunicipioToggle(m.id)}
+                                            />
+                                        </ListGroup.Item>
                                     ))}
-                                </ul>
-                            </>
-                        )}
-                    </li>
-                ))}
-            </ul>
+                                </ListGroup>
+                            </Accordion.Body>
+                        </Accordion.Item>
+                    ))}
+                </Accordion>
+            </Container>
         </aside>
     );
 }
