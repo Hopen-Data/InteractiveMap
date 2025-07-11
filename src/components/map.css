@@ -1,22 +1,102 @@
 .app-container {
-    display: flex;
-    height: 100vh;
-    width: 100vw;
-    overflow: hidden;
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
 }
 
 .sidebar {
-    width: 400px;
-    min-width: 300px;
-    max-width: 600px;
-    overflow: auto;
-    background: #fff;
-    z-index: 1000;
+  width: 400px;
+  min-width: 300px;
+  max-width: 600px;
+  overflow: auto;
+  background: #fff;
+  z-index: 1000;
 }
 
 .map-leaflet {
-    flex: 1;
-    min-width: 0;
-    position: relative;
-    height: 100vh;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  height: 100vh;
+}
+
+.estado-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+  gap: 8px;
+}
+
+.estado-label {
+  display: block;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s;
+  font-weight: bold;
+}
+
+.estado-label:hover {
+  background-color: #e9ecef;
+}
+
+.estado-label.active {
+  background-color: #0d6efd;
+  color: white;
+  border-color: #0d6efd;
+}
+
+.sidebar-offcanvas {
+  width: 280px !important; 
+}
+.sidebar-compact {
+  font-size: 0.75rem;
+}
+
+/* Diminui o tamanho dos títulos <h4> e a margem abaixo deles */
+.sidebar-compact h4,
+.sidebar-compact h5 {
+  font-size: 1rem;
+  /* Um pouco menor que o padrão */
+  margin-bottom: 0.75rem !important;
+  /* Menos espaço abaixo do título */
+}
+
+/* Ajusta o espaçamento dos componentes de formulário (checkbox, switch) */
+.sidebar-compact .form-check {
+  margin-bottom: 0.4rem;
+  /* Menos espaço entre cada check */
+  padding-left: 2em;
+  /* Garante alinhamento */
+}
+
+.sidebar-compact .form-check-label {
+  padding-top: 2px;
+  /* Alinha melhor o texto com o switch/check */
+}
+
+/* Diminui o espaçamento vertical dos itens da lista */
+.sidebar-compact .list-group-item {
+  padding-top: 0.4rem;
+  padding-bottom: 0.4rem;
+}
+
+/* Compacta o cabeçalho do Accordion (Regiões) */
+.sidebar-compact .accordion-header button {
+  font-size: 0.9rem;
+  padding: 0.75rem 1rem;
+}
+
+/* Compacta a lista de siglas dos estados */
+.sidebar-compact .estado-label {
+  padding: 6px;
+  font-size: 0.8rem;
+}
+
+/* Compacta os botões e inputs do painel de municípios */
+.sidebar-compact #painel-lista-municipios button,
+.sidebar-compact #painel-lista-municipios input {
+  font-size: 0.8rem;
 }
