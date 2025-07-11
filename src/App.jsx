@@ -1,12 +1,15 @@
 import L from 'leaflet';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from './utils/Sidebar';
 import InteractiveMap from './components/InteractiveMap';
-import {authFetch} from './utils/authFetch';
-import {API_BASE_URL} from './config/settings';
-import {formatHeatmapPointsPorMunicipio} from './utils/heatmap';
-import {getTokenFromUrl} from './utils/getTokenFromUrl';
+import { authFetch } from './utils/authFetch';
+import { API_BASE_URL } from './config/settings';
+import { formatHeatmapPointsPorMunicipio } from './utils/heatmap';
+import { getTokenFromUrl } from './utils/getTokenFromUrl';
+import Button from 'react-bootstrap/Button';
+import { FaBars } from 'react-icons/fa';
+import './components/map.css';
 
 export default function App() {
     const [selectedLayers, setSelectedLayers] = useState([]);
@@ -19,6 +22,7 @@ export default function App() {
     const [heatmapEnabled, setHeatmapEnabled] = useState(false);
     const [heatmapPoints, setHeatmapPoints] = useState([]);
     const formattedPointsPorMunicipio = formatHeatmapPointsPorMunicipio(heatmapPoints);
+    const [showSidebar, setShowSidebar] = useState(false);
 
     const [loading, setLoading] = useState(false);
 
@@ -39,7 +43,7 @@ export default function App() {
         Promise.all(
             selectedLayers.map(layerId =>
                 authFetch(`${API_BASE_URL}/mapas/api/geojson-layer/${layerId}/`)
-                    .then(res => res.ok ? res.json() : {features: []})
+                    .then(res => res.ok ? res.json() : { features: [] })
                     .then(data => data.features || [])
             )
         ).then(results => {
@@ -48,20 +52,21 @@ export default function App() {
         }).catch(() => setLoading(false));
     }, [selectedLayers]);
 
+
+    const handleSidebarClose = () => setShowSidebar(false);
+    const handleSidebarShow = () => setShowSidebar(true);
+
     function fetchHeatmapForMunicipio(municipioId) {
         authFetch(`${API_BASE_URL}/mapas/api/heatmap/municipios/${municipioId}/`)
             .then(res => res.ok ? res.json() : null)
             .then(data => {
                 if (!data) return;
-                // Se vier um array direto
                 if (Array.isArray(data)) {
                     setHeatmapPoints(prev => [...prev, ...data]);
                 }
-                // Se vier um objeto único
                 else if (data.latitude && data.longitude) {
                     setHeatmapPoints(prev => [...prev, data]);
                 }
-                // Se vier no formato { pontos: [...] }
                 else if (Array.isArray(data.pontos)) {
                     setHeatmapPoints(prev => [...prev, ...data.pontos]);
                 }
@@ -78,7 +83,6 @@ export default function App() {
                 if (data && data.features && data.features[0]) {
                     setMunicipioFeatures(prev => {
                         const newFeature = data.features[0];
-                        // Evita adicionar features duplicados pelo id
                         if (prev.some(f => f.properties.id === newFeature.properties.id)) {
                             return prev;
                         }
@@ -100,14 +104,13 @@ export default function App() {
 
     function onRemoveMunicipioGeojson(municipioId) {
         setMunicipiosSelecionados(prev => prev.filter(id => id !== municipioId));
-        // Remove pontos do heatmap do município removido
         setHeatmapPoints(prev => prev.filter(p => p.codigo_ibge !== municipioId));
     }
 
     const features = [...layerFeatures, ...municipioFeatures];
 
     return (
-        <div style={{display: 'flex'}}>
+        <div style={{ display: 'flex' }}>
             {loading && (
                 <div style={{
                     position: 'fixed',
@@ -125,19 +128,40 @@ export default function App() {
                     Carregando camada...
                 </div>
             )}
-            <aside className="sidebar">
-                <Sidebar
-                    selectedLayers={selectedLayers}
-                    onChange={setSelectedLayers}
-                    municipiosSelecionados={municipiosSelecionados}
-                    onAddMunicipioGeojson={onAddMunicipioGeojson}
-                    onRemoveMunicipioGeojson={onRemoveMunicipioGeojson}
-                    heatmapEnabled={heatmapEnabled}
-                    setHeatmapEnabled={setHeatmapEnabled}
-                    choroplethAtivo={choroplethAtivo}
-                    setChoroplethAtivo={setChoroplethAtivo}
-                />
-            </aside>
+            {!showSidebar && (
+                <Button
+                    variant="primary"
+                    onClick={handleSidebarShow}
+                    className="m-2 menu-button-custom"
+                    style={{
+                        position: 'absolute',
+                        left: '40px',
+                        zIndex: 1051,
+                        backgroundColor: '#17A2B8',
+                        borderColor: '#17A2B8',
+                        width: '35px',
+                        height: '35px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                    }}
+                >
+                    <FaBars size={18} />
+                </Button>
+            )}
+            <Sidebar
+                show={showSidebar}
+                onHide={handleSidebarClose}
+                selectedLayers={selectedLayers}
+                onChange={setSelectedLayers}
+                municipiosSelecionados={municipiosSelecionados}
+                onAddMunicipioGeojson={onAddMunicipioGeojson}
+                onRemoveMunicipioGeojson={onRemoveMunicipioGeojson}
+                heatmapEnabled={heatmapEnabled}
+                setHeatmapEnabled={setHeatmapEnabled}
+                choroplethAtivo={choroplethAtivo}
+                setChoroplethAtivo={setChoroplethAtivo}
+            />
             <InteractiveMap
                 features={features}
                 bounds={mapBounds}
