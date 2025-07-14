@@ -4,6 +4,7 @@ import MarkerClusterGroup from 'react-leaflet-cluster';
 import GenericPopup from './GenericPopup';
 
 export default function MarkerMap({features = []}) {
+    console.log(features);
     const jitter = value => value + (Math.random() - 0.5) * 0.0001;
 
     const pontos = useMemo(() =>
@@ -11,7 +12,6 @@ export default function MarkerMap({features = []}) {
                 .map(f => ({
                     ...f,
                     geometry: typeof f.geometry === 'string' ? JSON.parse(f.geometry) : f.geometry,
-                    properties: f.attributes || {}
                 }))
                 .filter(
                     feature =>
@@ -50,7 +50,7 @@ export default function MarkerMap({features = []}) {
                         draggable={false}
                     >
                         <Popup>
-                            <GenericPopup properties={{...rest, ...(attributes || {})}}/>
+                            <GenericPopup properties={{...(feature.properties || {}), ...(feature.attributes || {})}} />
                         </Popup>
                     </Marker>
                 );

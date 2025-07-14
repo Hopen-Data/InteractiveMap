@@ -20,7 +20,6 @@ export default function Sidebar({
 }) {
     // Estados para armazenar dados das camadas e UFs
     const [layers, setLayers] = useState([]);
-    const [ufsExpandidas, setUfsExpandidas] = useState([]);
     const [activeUfKey, setActiveUfKey] = useState(null);
 
     //  ESTADOS PARA CONTROLAR A LÓGICA DOS PAINÉIS ---
@@ -32,7 +31,7 @@ export default function Sidebar({
 
     useEffect(() => {
         Promise.all([
-            authFetch(`${API_BASE_URL}/mapas/api/layers/`).then(res => res.json()),
+            authFetch(`${API_BASE_URL}/mapas/api/v1/layers/`).then(res => res.json()),
         ])
             .then(([layersData]) => {
                 setLayers(Array.isArray(layersData) ? layersData : layersData.results || []);

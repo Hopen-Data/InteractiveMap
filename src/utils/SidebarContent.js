@@ -45,11 +45,19 @@ export default function SidebarContent(
             <hr/>
             <h4 className="mb-3">Camadas de Pontos</h4>
             <ListGroup>
-                {layers.map(layer => (
-                    <ListGroup.Item key={layer.id} className="border-0 bg-light">
-                        <Form.Check type="checkbox" id={`layer-${layer.id}`} label={layer.name}
-                                    checked={selectedLayers.includes(layer.id)}
-                                    onChange={() => onLayerChange(layer.id)}/>
+                {(layers || []).map((layer, idx) => (
+                    <ListGroup.Item key={layer.id ?? `layer-idx-${idx}`} className="border-0 bg-light">
+                        <Form.Check
+                            type="checkbox"
+                            id={`layer-${layer.id ?? idx}`}
+                            label={layer.name ?? `Layer ${idx + 1}`}
+                            checked={layer.id ? selectedLayers.includes(layer.id) : false}
+                            onChange={() => {
+                                if (layer.id !== undefined && layer.id !== null) {
+                                    onLayerChange(layer.id);
+                                }
+                            }}
+                        />
                     </ListGroup.Item>
                 ))}
             </ListGroup>
