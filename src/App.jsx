@@ -1,14 +1,14 @@
 import L from 'leaflet';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import React, { useEffect, useState } from "react";
+import React, {useEffect, useState} from "react";
 import Sidebar from './utils/Sidebar';
 import InteractiveMap from './components/InteractiveMap';
-import { authFetch } from './utils/authFetch';
-import { API_BASE_URL } from './config/settings';
-import { formatHeatmapPointsPorMunicipio } from './utils/heatmap';
-import { getTokenFromUrl } from './utils/getTokenFromUrl';
+import {authFetch} from './utils/authFetch';
+import {API_BASE_URL} from './config/settings';
+import {formatHeatmapPointsPorMunicipio} from './utils/heatmap';
+import {getTokenFromUrl} from './utils/getTokenFromUrl';
 import Button from 'react-bootstrap/Button';
-import { FaBars } from 'react-icons/fa';
+import {FaBars} from 'react-icons/fa';
 import './components/map.css';
 
 export default function App() {
@@ -43,7 +43,7 @@ export default function App() {
         Promise.all(
             selectedLayers.map(layerId =>
                 authFetch(`${API_BASE_URL}/mapas/api/geojson-layer/${layerId}/`)
-                    .then(res => res.ok ? res.json() : { features: [] })
+                    .then(res => res.ok ? res.json() : {features: []})
                     .then(data => data.features || [])
             )
         ).then(results => {
@@ -63,11 +63,9 @@ export default function App() {
                 if (!data) return;
                 if (Array.isArray(data)) {
                     setHeatmapPoints(prev => [...prev, ...data]);
-                }
-                else if (data.latitude && data.longitude) {
+                } else if (data.latitude && data.longitude) {
                     setHeatmapPoints(prev => [...prev, data]);
-                }
-                else if (Array.isArray(data.pontos)) {
+                } else if (Array.isArray(data.pontos)) {
                     setHeatmapPoints(prev => [...prev, ...data.pontos]);
                 }
             });
@@ -110,7 +108,7 @@ export default function App() {
     const features = [...layerFeatures, ...municipioFeatures];
 
     return (
-        <div style={{ display: 'flex' }}>
+        <div style={{display: 'flex'}}>
             {loading && (
                 <div style={{
                     position: 'fixed',
@@ -129,25 +127,37 @@ export default function App() {
                 </div>
             )}
             {!showSidebar && (
-                <Button
-                    variant="primary"
-                    onClick={handleSidebarShow}
-                    className="m-2 menu-button-custom"
+                <div
+                    className="leaflet-control leaflet-bar"
                     style={{
                         position: 'absolute',
-                        left: '40px',
+                        left: '24px',
+                        top: '130px',
                         zIndex: 1051,
-                        backgroundColor: '#17A2B8',
-                        borderColor: '#17A2B8',
-                        width: '35px',
-                        height: '35px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
+                        margin: 0,
+                        padding: 0
                     }}
                 >
-                    <FaBars size={18} />
-                </Button>
+                    <Button
+                        onClick={handleSidebarShow}
+                        title="Open Sidebar"
+                        style={{
+                            background: '#fff',
+                            border: 'none',
+                            outline: 'none',
+                            borderRadius: 0,
+                            width: '30px',
+                            height: '30px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: 0,
+                            boxShadow: 'none'
+                        }}
+                    >
+                        <FaBars size={18} color="#000"/>
+                    </Button>
+                </div>
             )}
             <Sidebar
                 show={showSidebar}

@@ -73,7 +73,8 @@ export default function InteractiveMap(
         }
     }, [leafletMap, pendingFlyTo]);
 
-    return (<div className="app-container">
+    return (
+        <div className="app-container">
         <MapContainer
             center={position}
             zoom={5}
@@ -84,7 +85,7 @@ export default function InteractiveMap(
             className="map-leaflet"
             preferCanvas={true}
             attributionControl={false}
-            fullscreenControl={true}
+            fullscreenControl={false}
             fullscreenControlOptions={{
                 position: 'topleft', title: 'Full screen', titleCancel: 'Out of the full screen'
             }}

@@ -1,6 +1,7 @@
 import {useState} from "react";
 import {authFetch} from '../utils/authFetch';
 import {API_BASE_URL} from '../config/settings';
+import './map.css';
 
 function SearchGeoJSONControl({layerId, onData}) {
     const [search, setSearch] = useState("");
@@ -56,7 +57,7 @@ function SearchGeoJSONControl({layerId, onData}) {
                 background: "#fff",
                 padding: 8,
                 position: "absolute",
-                top: 165,
+                top: 180,
                 left: 10,
                 zIndex: 1000
             }}

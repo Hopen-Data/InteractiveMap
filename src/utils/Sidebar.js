@@ -7,8 +7,7 @@ import Offcanvas from 'react-bootstrap/Offcanvas';
 
 export default function Sidebar({
     selectedLayers = [],
-    onChange = () => {
-    },
+    onChange = () => {},
     show,
     onHide,
     onAddMunicipioGeojson,
