@@ -1,6 +1,7 @@
 import {useState} from "react";
 import {authFetch} from '../utils/authFetch';
 import {API_BASE_URL} from '../config/settings';
+import {BsSearch, BsX} from "react-icons/bs";
 import './map.css';
 
 function SearchGeoJSONControl({layerId, onData}) {
@@ -54,37 +55,93 @@ function SearchGeoJSONControl({layerId, onData}) {
         <div
             className="leaflet-control leaflet-bar"
             style={{
-                background: "#fff",
-                padding: 8,
+                background: "rgba(255,255,255,0.92)",
+                padding: 6,
                 position: "absolute",
                 top: 180,
                 left: 10,
-                zIndex: 1000
+                zIndex: 1000,
+                borderRadius: 0,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.10)",
+                border: "1px solid #e0e0e0",
+                minWidth: 130
             }}
         >
-            <input
-                type="text"
-                placeholder="Buscar..."
-                aria-label="Buscar camada"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                onKeyDown={e => {
-                    if (e.key === "Enter" && isLayerIdValid()) {
-                        handleSearch();
-                    }
-                }}
-                disabled={loading || !isLayerIdValid()}
-            />
-            <button
-                onClick={handleSearch}
-                disabled={loading || !search.trim() || !isLayerIdValid()}
-            >
-                {loading ? "Buscando..." : "Buscar"}
-            </button>
-            {search && !loading && isLayerIdValid() && (
-                <button onClick={handleClear} aria-label="Limpar busca">Limpar</button>
-            )}
-            {error && <div style={{color: "red"}}>{error}</div>}
+            <div style={{position: "relative", display: "inline-block", width: 120}}>
+                <input
+                    type="text"
+                    placeholder="Buscar..."
+                    aria-label="Buscar camada"
+                    value={search}
+                    onChange={e => setSearch(e.target.value)}
+                    onKeyDown={e => {
+                        if (e.key === "Enter" && isLayerIdValid()) {
+                            handleSearch();
+                        }
+                    }}
+                    disabled={loading || !isLayerIdValid()}
+                    style={{
+                        height: 22,
+                        fontSize: 12,
+                        border: "1px solid #ccc",
+                        borderRadius: 6,
+                        padding: "0 24px 0 8px",
+                        outline: "none",
+                        width: "100%",
+                        background: "#fafbfc"
+                    }}
+                />
+                <button
+                    onClick={handleSearch}
+                    disabled={loading || !search.trim() || !isLayerIdValid()}
+                    aria-label="Buscar"
+                    style={{
+                        position: "absolute",
+                        right: 2,
+                        top: 2,
+                        height: 18,
+                        width: 18,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        padding: 0,
+                        border: "none",
+                        background: "transparent",
+                        cursor: "pointer"
+                    }}
+                    tabIndex={-1}
+                >
+                    {loading ? (
+                        <span style={{fontSize: 10}}>...</span>
+                    ) : (
+                        <BsSearch size={12} color="#555"/>
+                    )}
+                </button>
+                {search && !loading && isLayerIdValid() && (
+                    <button
+                        onClick={handleClear}
+                        aria-label="Limpar busca"
+                        style={{
+                            position: "absolute",
+                            right: 22,
+                            top: 2,
+                            height: 18,
+                            width: 18,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            padding: 0,
+                            border: "none",
+                            background: "transparent",
+                            cursor: "pointer"
+                        }}
+                        tabIndex={-1}
+                    >
+                        <BsX size={13} color="#888"/>
+                    </button>
+                )}
+            </div>
+            {error && <div style={{color: "red", fontSize: 11, marginTop: 4}}>{error}</div>}
         </div>
     );
 }

@@ -42,7 +42,7 @@ export default function App() {
         setLoading(true);
         Promise.all(
             selectedLayers.map(layerId =>
-                authFetch(`${API_BASE_URL}/mapas/api/geojson-layer/${layerId}/`)
+                authFetch(`${API_BASE_URL}/mapas/api/v1/geojson-layer/${layerId}/`)
                     .then(res => res.ok ? res.json() : {features: []})
                     .then(data => data.features || [])
             )
