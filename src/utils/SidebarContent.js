@@ -31,6 +31,8 @@ export default function SidebarContent(
         municipiosSelecionados,
         handleMunicipioToggle,
         handleSelectAllMunicipios,
+        onBrasilToggle,
+        isBrasilChecked,
     }
 ) {
     return (
@@ -38,11 +40,11 @@ export default function SidebarContent(
             <h4 className="mb-3">Visão Espacial</h4>
             <Form.Group>
                 <Form.Check type="switch" id="heatmap-switch" label="Habilitar mapa de calor" checked={heatmapEnabled}
-                            onChange={() => setHeatmapEnabled(p => !p)}/>
+                    onChange={() => setHeatmapEnabled(p => !p)} />
                 <Form.Check type="switch" id="choropleth-switch" label="Habilitar mapa coroplético"
-                            checked={choroplethAtivo} onChange={() => setChoroplethAtivo(p => !p)}/>
+                    checked={choroplethAtivo} onChange={() => setChoroplethAtivo(p => !p)} />
             </Form.Group>
-            <hr/>
+            <hr />
             <h4 className="mb-3">Camadas de Pontos</h4>
             <ListGroup>
                 {(layers || []).map((layer, idx) => (
@@ -61,9 +63,13 @@ export default function SidebarContent(
                     </ListGroup.Item>
                 ))}
             </ListGroup>
-            <hr/>
+            <hr />
             {view === 'estados' ? (
-                <PainelEstados onUfClick={onUfClick}/>
+                <PainelEstados
+                    onBrasilToggle={onBrasilToggle}
+                    onUfClick={onUfClick}
+                    isBrasilChecked={isBrasilChecked}
+                     />
             ) : (
                 <PainelMunicipios
                     ufSelecionada={ufSelecionada}

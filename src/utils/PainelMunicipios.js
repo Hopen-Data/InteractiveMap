@@ -17,7 +17,7 @@ export default function PainelMunicipios({
 }) {
 
     const municipiosFiltrados = municipios.filter(m =>
-        (m.nome || '').toLowerCase().includes(filtro.toLowerCase())
+        (m.name || '').toLowerCase().includes(filtro.toLowerCase())
     );
     const todosVisiveisSelecionados = municipiosFiltrados.length > 0 && municipiosFiltrados.every(m => municipiosSelecionados.includes(m.id));
 
@@ -58,7 +58,7 @@ export default function PainelMunicipios({
                             <Form.Check
                                 type="checkbox"
                                 id={`municipio-${m.id}`}
-                                label={m.nome}
+                                label={m.name}
                                 checked={municipiosSelecionados.includes(m.id)}
                                 onChange={() => onMunicipioToggle(m.id)}
                             />

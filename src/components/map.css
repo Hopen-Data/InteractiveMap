@@ -104,3 +104,32 @@
 .leaflet-control.leaflet-bar * {
     box-shadow: none !important;
 }
+
+.tree-container .list-group-item {
+  border: none; /* Remove bordas dos itens */
+  padding: 0.3rem 0; /* Espaçamento vertical menor */
+}
+
+/* Estilo para cada item da árvore (alinhamento) */
+.tree-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Espaço entre o ícone e o texto */
+}
+
+/* Estilo para o ícone de expandir/recolher */
+.expand-icon {
+  cursor: pointer;
+  color: #6c757d; /* Cinza do Bootstrap */
+}
+
+/* Estilo para a sub-lista (regiões e estados) */
+.tree-submenu {
+  padding-left: 24px; /* A indentação que cria o efeito de árvore! */
+  list-style: none; /* Remove bolinhas da lista */
+}
+
+/* Reutilizando o estilo do grid de estados */
+.tree-submenu .estado-grid {
+  padding-left: 24px;
+}
