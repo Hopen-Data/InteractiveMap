@@ -1,14 +1,14 @@
 import L from 'leaflet';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import Sidebar from './utils/Sidebar';
 import InteractiveMap from './components/InteractiveMap';
-import {authFetch} from './utils/authFetch';
-import {API_BASE_URL} from './config/settings';
-import {formatHeatmapPointsPorMunicipio} from './utils/heatmap';
-import {getTokenFromUrl} from './utils/getTokenFromUrl';
+import { authFetch } from './utils/authFetch';
+import { API_BASE_URL } from './config/settings';
+import { formatHeatmapPointsPorMunicipio } from './utils/heatmap';
+import { getTokenFromUrl } from './utils/getTokenFromUrl';
 import Button from 'react-bootstrap/Button';
-import {FaBars} from 'react-icons/fa';
+import { FaBars } from 'react-icons/fa';
 import './components/map.css';
 
 export default function App() {
@@ -18,13 +18,20 @@ export default function App() {
     const [municipioFeatures, setMunicipioFeatures] = useState([]);
     const [mapBounds, setMapBounds] = useState(null);
     const [choroplethAtivo, setChoroplethAtivo] = useState(false);
-
     const [heatmapEnabled, setHeatmapEnabled] = useState(false);
     const [heatmapPoints, setHeatmapPoints] = useState([]);
     const formattedPointsPorMunicipio = formatHeatmapPointsPorMunicipio(heatmapPoints);
     const [showSidebar, setShowSidebar] = useState(false);
-
+    const [brasilGeojson, setBrasilGeojson] = useState(null);
+    const [isBrasilChecked, setIsBrasilChecked] = useState(false);
+    const features = [...layerFeatures, ...municipioFeatures];
     const [loading, setLoading] = useState(false);
+
+    const estiloMalhaBrasil = {
+        color: '#007bff',  
+        weight: 2,    
+        fillOpacity: 0,    
+    };
 
     useEffect(() => {
         const token = getTokenFromUrl();
@@ -43,7 +50,7 @@ export default function App() {
         Promise.all(
             selectedLayers.map(layerId =>
                 authFetch(`${API_BASE_URL}/mapas/api/v1/geojson-layer/${layerId}/`)
-                    .then(res => res.ok ? res.json() : {features: []})
+                    .then(res => res.ok ? res.json() : { features: [] })
                     .then(data => data.features || [])
             )
         ).then(results => {
@@ -57,7 +64,7 @@ export default function App() {
     const handleSidebarShow = () => setShowSidebar(true);
 
     function fetchHeatmapForMunicipio(municipioId) {
-        authFetch(`${API_BASE_URL}/mapas/api/heatmap/municipios/${municipioId}/`)
+        authFetch(`${API_BASE_URL}/mapas/api/v1/heatmap/municipalities/${municipioId}/`)
             .then(res => res.ok ? res.json() : null)
             .then(data => {
                 if (!data) return;
@@ -75,7 +82,7 @@ export default function App() {
         setMunicipiosSelecionados(prev =>
             prev.includes(municipioId) ? prev : [...prev, municipioId]
         );
-        authFetch(`${API_BASE_URL}/mapas/api/geojson/municipio/${municipioId}/`)
+        authFetch(`${API_BASE_URL}/mapas/api/v1/geojson/municipality/${municipioId}/`)
             .then(res => res.ok ? res.json() : null)
             .then(data => {
                 if (data && data.features && data.features[0]) {
@@ -105,10 +112,45 @@ export default function App() {
         setHeatmapPoints(prev => prev.filter(p => p.codigo_ibge !== municipioId));
     }
 
-    const features = [...layerFeatures, ...municipioFeatures];
+    function handleAddBrasilGeojson(geom) {
+        // 1. Define o estado do checkbox como marcado.
+        setIsBrasilChecked(true);
+
+        // 2. Se a malha já foi adicionada, não faz nada para evitar duplicação.
+        if (brasilGeojson) return;
+
+        // 3. A API do Brasil retorna apenas a geometria. Para o Leaflet (e para
+        //    manter um padrão), montamos um objeto GeoJSON do tipo "Feature" completo.
+        const geojsonFeature = {
+            type: 'Feature',
+            properties: { name: 'Brasil' }, // Propriedades que você pode usar depois
+            geometry: geom,
+        };
+
+        // 4. Salvamos o objeto completo no estado. Isso fará com que o mapa renderize a malha.
+        setBrasilGeojson(geojsonFeature);
+
+        // 5. A lógica para centralizar o mapa é idêntica à dos municípios:
+        //    criamos uma camada temporária apenas para calcular os limites.
+        const layer = L.geoJSON(geojsonFeature);
+        const leafletBounds = layer.getBounds();
+
+        if (leafletBounds.isValid()) {
+            // Supondo que você tenha a função setMapBounds no seu App.jsx
+            setMapBounds([
+                [leafletBounds.getSouthWest().lat, leafletBounds.getSouthWest().lng],
+                [leafletBounds.getNorthEast().lat, leafletBounds.getNorthEast().lng]
+            ]);
+        }
+    }
+
+    function handleRemoveBrasilGeojson() {
+        setIsBrasilChecked(false);
+        setBrasilGeojson(null);
+    }
 
     return (
-        <div style={{display: 'flex'}}>
+        <div style={{ display: 'flex' }}>
             {loading && (
                 <div style={{
                     position: 'fixed',
@@ -155,7 +197,7 @@ export default function App() {
                             boxShadow: 'none'
                         }}
                     >
-                        <FaBars size={18} color="#000"/>
+                        <FaBars size={18} color="#000" />
                     </Button>
                 </div>
             )}
@@ -171,6 +213,9 @@ export default function App() {
                 setHeatmapEnabled={setHeatmapEnabled}
                 choroplethAtivo={choroplethAtivo}
                 setChoroplethAtivo={setChoroplethAtivo}
+                onAddBrasilGeojson={handleAddBrasilGeojson}
+                onRemoveBrasilGeojson={handleRemoveBrasilGeojson}
+                isBrasilChecked={isBrasilChecked}
             />
             <InteractiveMap
                 features={features}
@@ -180,6 +225,9 @@ export default function App() {
                 choroplethAtivo={choroplethAtivo}
                 municipiosSelecionados={municipiosSelecionados}
                 layerId={selectedLayers}
+                
+                brasilGeojson={brasilGeojson}
+                estiloMalhaBrasil={estiloMalhaBrasil}
             />
         </div>
     );

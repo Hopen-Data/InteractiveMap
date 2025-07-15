@@ -7,7 +7,7 @@ import Offcanvas from 'react-bootstrap/Offcanvas';
 
 export default function Sidebar({
     selectedLayers = [],
-    onChange = () => {},
+    onChange = () => { },
     show,
     onHide,
     onAddMunicipioGeojson,
@@ -17,9 +17,13 @@ export default function Sidebar({
     setHeatmapEnabled,
     choroplethAtivo,
     setChoroplethAtivo,
+    onAddBrasilGeojson,
+    onRemoveBrasilGeojson,
+    isBrasilChecked,
 }) {
     // Estados para armazenar dados das camadas e UFs
     const [layers, setLayers] = useState([]);
+    const [ufsExpandidas, setUfsExpandidas] = useState([]);
     const [activeUfKey, setActiveUfKey] = useState(null);
 
     //  ESTADOS PARA CONTROLAR A LÓGICA DOS PAINÉIS ---
@@ -47,10 +51,9 @@ export default function Sidebar({
         setIsLoadingMunicipios(true);
 
         // Fetch dos municípios para a UF clicada
-        authFetch(`${API_BASE_URL}/mapas/api/estado/municipios/${uf.sigla}/`)
+        authFetch(`${API_BASE_URL}/mapas/api/v1/state/municipalities/${uf.sigla}/`)
             .then(res => res.json())
             .then(data => {
-                console.log(data);
                 setMunicipios(Array.isArray(data) ? data : data.results || []);
             })
             .catch(error => console.error("Erro ao buscar municípios", error))
@@ -103,6 +106,22 @@ export default function Sidebar({
         onChange(newSelected);
     }
 
+    const handleBrasilToggle = (isChecked) => {
+        if (isChecked) {
+            authFetch(`${API_BASE_URL}/mapas/api/v1/countries/`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.length > 0 && data[0].geom) {
+                        console.log(data[0].geom);
+                        onAddBrasilGeojson(data[0].geom);
+                    }
+                })
+                .catch(error => console.error("Erro ao buscar malha do Brasil:", error));
+        } else {
+            onRemoveBrasilGeojson();
+        }
+    };
+
     return (
         <Offcanvas show={show} onHide={onHide} placement="start" className="sidebar-offcanvas" >
             <Offcanvas.Header closeButton>
@@ -125,10 +144,12 @@ export default function Sidebar({
                     municipios={municipios}
                     isLoadingMunicipios={isLoadingMunicipios}
                     onVoltar={handleVoltar}
-                    view={view} 
+                    view={view}
                     onUfClick={handleUfClick}
                     filtroMunicipio={filtroMunicipio}
                     setFiltroMunicipio={setFiltroMunicipio}
+                    onBrasilToggle={handleBrasilToggle}
+                    isBrasilChecked={isBrasilChecked}
                 />
             </Offcanvas.Body>
         </Offcanvas>
