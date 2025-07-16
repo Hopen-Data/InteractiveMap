@@ -20,10 +20,16 @@ export default function Sidebar({
     onAddBrasilGeojson,
     onRemoveBrasilGeojson,
     isBrasilChecked,
+    onAddRegionGeojson,
+    onRemoveRegionGeojson,
+    checkedRegions,
+    setLoading,
+    onAddStateGeojson,
+    onRemoveStateGeojson,
+    checkedStates,
 }) {
     // Estados para armazenar dados das camadas e UFs
     const [layers, setLayers] = useState([]);
-    const [ufsExpandidas, setUfsExpandidas] = useState([]);
     const [activeUfKey, setActiveUfKey] = useState(null);
 
     //  ESTADOS PARA CONTROLAR A LÓGICA DOS PAINÉIS ---
@@ -91,14 +97,6 @@ export default function Sidebar({
         }
     }
 
-    function handleToggleHeatmap() {
-        setHeatmapEnabled(prev => !prev);
-    }
-
-    function handleTogglechoropleth() {
-        setChoroplethAtivo(prev => !prev);
-    }
-
     function handleLayerChange(layerId) {
         const newSelected = selectedLayers.includes(layerId)
             ? selectedLayers.filter(l => l !== layerId)
@@ -108,6 +106,7 @@ export default function Sidebar({
 
     const handleBrasilToggle = (isChecked) => {
         if (isChecked) {
+            setLoading(true);
             authFetch(`${API_BASE_URL}/mapas/api/v1/countries/`)
                 .then(res => res.json())
                 .then(data => {
@@ -116,9 +115,43 @@ export default function Sidebar({
                         onAddBrasilGeojson(data[0].geom);
                     }
                 })
-                .catch(error => console.error("Erro ao buscar malha do Brasil:", error));
+                .catch(() => setLoading(false));
         } else {
             onRemoveBrasilGeojson();
+        }
+    };
+
+    const handleRegionToggle = (regiao, isChecked) => {
+        const regionName = regiao.nome;
+
+        if (isChecked) {
+            setLoading(true);
+            authFetch(`${API_BASE_URL}/mapas/api/v1/regions/?name=${regionName}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.length > 0 && data[0].geom) {
+                        onAddRegionGeojson(regionName, data[0].geom);
+                    }
+                })
+                .catch(() => setLoading(false));
+        } else {
+            onRemoveRegionGeojson(regionName);
+        }
+    };
+
+    const handleStateToggle = (uf, isChecked) => {
+        if (isChecked) {
+            setLoading(true);
+            authFetch(`${API_BASE_URL}/mapas/api/v1/states/${uf.id}/`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.geom) {
+                        onAddStateGeojson(uf, data.geom);
+                    }
+                })
+                .catch(() => setLoading(false));
+        } else {
+            onRemoveStateGeojson(uf);
         }
     };
 
@@ -150,6 +183,10 @@ export default function Sidebar({
                     setFiltroMunicipio={setFiltroMunicipio}
                     onBrasilToggle={handleBrasilToggle}
                     isBrasilChecked={isBrasilChecked}
+                    onRegionToggle={handleRegionToggle}
+                    checkedRegions={checkedRegions}
+                    onStateToggle={handleStateToggle}
+                    checkedStates={checkedStates}
                 />
             </Offcanvas.Body>
         </Offcanvas>
