@@ -10,6 +10,14 @@ import { getTokenFromUrl } from './utils/getTokenFromUrl';
 import Button from 'react-bootstrap/Button';
 import { FaBars } from 'react-icons/fa';
 import './components/map.css';
+import { REGIOES_BRASIL } from './utils/Regioes';
+
+const mapaEstadoParaRegiao = {};
+REGIOES_BRASIL.forEach(regiao => {
+    regiao.estados.forEach(estado => {
+        mapaEstadoParaRegiao[estado.sigla] = regiao.nome;
+    });
+});
 
 export default function App() {
     const [selectedLayers, setSelectedLayers] = useState([]);
@@ -27,11 +35,38 @@ export default function App() {
     const features = [...layerFeatures, ...municipioFeatures];
     const [loading, setLoading] = useState(false);
 
+    const [regionFeatures, setRegionFeatures] = useState([]);
+    const [checkedRegions, setCheckedRegions] = useState([]);
+
+    const [stateFeatures, setStateFeatures] = useState([]);
+    const [checkedStates, setCheckedStates] = useState([]);
+
     const estiloMalhaBrasil = {
-        color: '#007bff',  
-        weight: 2,    
-        fillOpacity: 0,    
+        color: '#007bff',
+        weight: 2,
+        fillOpacity: 0
     };
+
+    const CORES_REGIOES = {
+        'Norte': '#1e4dcdff',
+        'Nordeste': '#ff7f0e',
+        'Centro-Oeste': '#2ca02c',
+        'Sudeste': '#d62728',
+        'Sul': '#9467bd',
+    };
+
+    function getEstiloEstado(feature) {
+        const siglaEstado = feature.properties.sigla;
+        const nomeRegiao = mapaEstadoParaRegiao[siglaEstado];
+        const cor = CORES_REGIOES[nomeRegiao] || '#cccccc';
+
+        return {
+            color: cor,
+            weight: 2,
+            fillColor: 0,
+            fillOpacity: 0,
+        };
+    }
 
     useEffect(() => {
         const token = getTokenFromUrl();
@@ -58,7 +93,6 @@ export default function App() {
             setLoading(false);
         }).catch(() => setLoading(false));
     }, [selectedLayers]);
-
 
     const handleSidebarClose = () => setShowSidebar(false);
     const handleSidebarShow = () => setShowSidebar(true);
@@ -113,40 +147,92 @@ export default function App() {
     }
 
     function handleAddBrasilGeojson(geom) {
-        // 1. Define o estado do checkbox como marcado.
         setIsBrasilChecked(true);
 
-        // 2. Se a malha já foi adicionada, não faz nada para evitar duplicação.
         if (brasilGeojson) return;
 
-        // 3. A API do Brasil retorna apenas a geometria. Para o Leaflet (e para
-        //    manter um padrão), montamos um objeto GeoJSON do tipo "Feature" completo.
         const geojsonFeature = {
             type: 'Feature',
-            properties: { name: 'Brasil' }, // Propriedades que você pode usar depois
+            properties: { name: 'Brasil' },
             geometry: geom,
         };
 
-        // 4. Salvamos o objeto completo no estado. Isso fará com que o mapa renderize a malha.
         setBrasilGeojson(geojsonFeature);
 
-        // 5. A lógica para centralizar o mapa é idêntica à dos municípios:
-        //    criamos uma camada temporária apenas para calcular os limites.
         const layer = L.geoJSON(geojsonFeature);
         const leafletBounds = layer.getBounds();
 
         if (leafletBounds.isValid()) {
-            // Supondo que você tenha a função setMapBounds no seu App.jsx
             setMapBounds([
                 [leafletBounds.getSouthWest().lat, leafletBounds.getSouthWest().lng],
                 [leafletBounds.getNorthEast().lat, leafletBounds.getNorthEast().lng]
             ]);
         }
+
+        setLoading(false)
     }
 
     function handleRemoveBrasilGeojson() {
         setIsBrasilChecked(false);
         setBrasilGeojson(null);
+    }
+
+    function handleAddRegionGeojson(regionName, geom) {
+        const geojsonFeature = {
+            type: 'Feature',
+            properties: { name: regionName },
+            geometry: geom,
+        };
+
+        setRegionFeatures(prev => {
+            if (prev.some(f => f.properties.name === regionName)) {
+                return prev;
+            }
+            return [...prev, geojsonFeature];
+        });
+
+        setCheckedRegions(prev => [...prev, regionName]);
+
+        setLoading(false)
+    }
+
+    function handleRemoveRegionGeojson(regionName) {
+        setRegionFeatures(prev => prev.filter(f => f.properties.name !== regionName));
+        setCheckedRegions(prev => prev.filter(name => name !== regionName));
+    }
+
+    function handleAddStateGeojson(uf, geom) {
+        const geojsonFeature = {
+            type: 'Feature',
+            properties: { sigla: uf.sigla, nome: uf.nome },
+            geometry: geom,
+        };
+
+        setStateFeatures(prev => {
+            if (prev.some(f => f.properties.sigla === uf.sigla)) return prev;
+            return [...prev, geojsonFeature];
+        });
+
+        setCheckedStates(prev => [...prev, uf.sigla]);
+
+        setLoading(false);
+    }
+
+    function handleRemoveStateGeojson(uf) {
+        setStateFeatures(prev => prev.filter(f => f.properties.sigla !== uf.sigla));
+        setCheckedStates(prev => prev.filter(sigla => sigla !== uf.sigla));
+    }
+
+    function getEstiloRegiao(feature) {
+        const nomeRegiao = feature.properties.name;
+        const cor = CORES_REGIOES[nomeRegiao] || '#cccccc';
+
+        return {
+            color: cor,
+            weight: 2,
+            fillColor: 0,
+            fillOpacity: 0
+        };
     }
 
     return (
@@ -216,6 +302,14 @@ export default function App() {
                 onAddBrasilGeojson={handleAddBrasilGeojson}
                 onRemoveBrasilGeojson={handleRemoveBrasilGeojson}
                 isBrasilChecked={isBrasilChecked}
+                onAddRegionGeojson={handleAddRegionGeojson}
+                onRemoveRegionGeojson={handleRemoveRegionGeojson}
+                checkedRegions={checkedRegions}
+                setLoading={setLoading}
+                loading={loading}
+                onAddStateGeojson={handleAddStateGeojson}
+                onRemoveStateGeojson={handleRemoveStateGeojson}
+                checkedStates={checkedStates}
             />
             <InteractiveMap
                 features={features}
@@ -225,9 +319,12 @@ export default function App() {
                 choroplethAtivo={choroplethAtivo}
                 municipiosSelecionados={municipiosSelecionados}
                 layerId={selectedLayers}
-                
                 brasilGeojson={brasilGeojson}
                 estiloMalhaBrasil={estiloMalhaBrasil}
+                regionFeatures={regionFeatures}
+                getEstiloRegiao={getEstiloRegiao}
+                stateFeatures={stateFeatures}
+                estiloMalhaEstado={getEstiloEstado}
             />
         </div>
     );

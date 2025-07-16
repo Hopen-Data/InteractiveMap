@@ -6,9 +6,17 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import { FaCaretRight, FaCaretDown } from 'react-icons/fa';
 
 
-export default function PainelEstados({ onUfClick, onBrasilToggle, isBrasilChecked }) {
+export default function PainelEstados({
+  onUfClick,
+  onBrasilToggle,
+  isBrasilChecked,
+  onRegionToggle,
+  checkedRegions,
+  onStateToggle,
+  checkedStates,
+}) {
 
-  const [expanded, setExpanded] = useState({ Brasil: true }); 
+  const [expanded, setExpanded] = useState({ Brasil: true });
 
   const toggleExpand = (itemName) => {
     setExpanded(prev => ({ ...prev, [itemName]: !prev[itemName] }));
@@ -16,7 +24,7 @@ export default function PainelEstados({ onUfClick, onBrasilToggle, isBrasilCheck
 
   return (
     <div className="tree-container">
-      <h4 className="mb-2">Malhas Municipais</h4>
+      <h4 className="mb-2">Limites e Regiões</h4>
       <small className="text-muted d-block mb-3">Selecione o nível geográfico.</small>
 
       <ListGroup>
@@ -47,7 +55,8 @@ export default function PainelEstados({ onUfClick, onBrasilToggle, isBrasilCheck
                       type="checkbox"
                       id={`region-check-${regiao.nome}`}
                       label={regiao.nome}
-                    // onChange={(e) => onRegionToggle(regiao, e.target.checked)}
+                      checked={checkedRegions.includes(regiao.nome)}
+                      onChange={(e) => onRegionToggle(regiao, e.target.checked)}
                     />
                   </div>
 
@@ -67,7 +76,8 @@ export default function PainelEstados({ onUfClick, onBrasilToggle, isBrasilCheck
                               id={`state-check-${uf.sigla}`}
                               label={uf.nome}
                               onClick={(e) => e.stopPropagation()}
-                              onChange={() => { /* Lógica do checkbox será implementada aqui */ }}
+                              checked={checkedStates.includes(uf.sigla)}
+                              onChange={(e) => onStateToggle(uf, e.target.checked)}
                             />
                           </ListGroup.Item>
                         ))}

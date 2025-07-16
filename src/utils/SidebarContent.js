@@ -33,6 +33,10 @@ export default function SidebarContent(
         handleSelectAllMunicipios,
         onBrasilToggle,
         isBrasilChecked,
+        onRegionToggle,
+        checkedRegions,
+        onStateToggle,
+        checkedStates
     }
 ) {
     return (
@@ -69,7 +73,11 @@ export default function SidebarContent(
                     onBrasilToggle={onBrasilToggle}
                     onUfClick={onUfClick}
                     isBrasilChecked={isBrasilChecked}
-                     />
+                    onRegionToggle={onRegionToggle}
+                    checkedRegions={checkedRegions}
+                    onStateToggle={onStateToggle}
+                    checkedStates={checkedStates}
+                />
             ) : (
                 <PainelMunicipios
                     ufSelecionada={ufSelecionada}
