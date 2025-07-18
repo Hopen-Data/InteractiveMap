@@ -67,6 +67,8 @@ export default function MarkerMap({features = []}) {
         return byType;
     }, [features]);
 
+    console.log(features);
+
     return (
         <>
             {featuresByType.Point && <PointLayer features={featuresByType.Point}/>}
